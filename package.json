@@ -1,0 +1,26 @@
+{
+  "name": "vld",
+  "version": "0.0.0",
+  "description": "validator",
+  "main": "index.js",
+  "dependencies": {
+    "error": "~5.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/rf/vld"
+  },
+  "keywords": [
+    "validation"
+  ],
+  "author": "Russ Frank <rf@uber.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/rf/vld/issues"
+  },
+  "homepage": "https://github.com/rf/vld"
+}
