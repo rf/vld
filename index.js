@@ -13,7 +13,7 @@ var ValidationError = TypedError({
 });
 
 function validateSingle(item, key, name, checkFn, errorConstructor) {
-    var res = checkFn(item, key);
+    var res = checkFn(item, key, false);
     if (res) {
         res.object = name;
         throw new errorConstructor(res);

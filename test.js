@@ -71,7 +71,7 @@ test('properties with required or', function (assert) {
         vld.properties({foo: 93}, 'options', {
             foo: vld.required(vld.or(vld.function, vld.string, vld.equals(38)))
         });
-    }, /Expected foo to be function or string or 38, but instead got 93 \(number\)/);
+    }, /Expected property 'foo' of `options` to be function or string or 38, but instead got 93 \(number\)/);
 
     assert.end();
 });

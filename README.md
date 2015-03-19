@@ -20,11 +20,13 @@ function doThing(options) {
 }
 
 
-// throws ValidationError: Expected foo to be string, but instead got 39 (number)
+// InvalidPropertyError: Expected property 'foo' of `options` to be string, 
+// but instead got 39 (number)
 doThing({foo: 39});
 
 
-// throws InvalidPropertyError: Expected property 'bar' of `options` to be string (required), but instead got  (undefined)
+// throws InvalidPropertyError: Expected property 'bar' of `options` to be 
+// string (required), but instead got  (undefined)
 doThing({
     foo: 'hello',
     success: function () {},
@@ -34,7 +36,8 @@ doThing({
 })
 
 
-// throws ValidationError: Expected baz to be 34 or true or string, but instead got 1000 (number)
+// throws InvalidPropertyError: Expected property 'baz' of `options`to be 34 
+// or true or string, but instead got 1000 (number)
 doThing({
     foo: 'hello',
     bar: 'hi',
@@ -53,7 +56,10 @@ var vld = require('vld');
 
 function stuff(type, name, callback) {
     vld.required(vld.string)(type, 'argument 0 (type)');
-    vld.required(vld.or(vld.function, vld.string))(name, 'argument 1 (name or callback)');
+    vld.required(vld.or(vld.function, vld.string))(
+        name, 
+        'argument 1 (name or callback)'
+    );
     vld.function(callback, 'argument 2 (callback');
 }
 
@@ -63,7 +69,8 @@ stuff('string!', 'the name');
 // also does not throw
 testIt('sting', 'also string', function () {});
 
-// throws ValidationError: Expected argument 1 (name or callback) to be function or string, but instead got true (boolean)
+// throws ValidationError: Expected argument 1 (name or callback) to be 
+// function or string, but instead got true (boolean)
 testIt('string', true);
 ```
 
