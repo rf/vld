@@ -76,3 +76,28 @@ test('properties with required or', function (assert) {
     assert.end();
 });
 
+var states = {
+    DISABLED: 'DISABLED',
+    ENABLED: 'ENABLED',
+    PROCESSING: 'PROCESSING',
+    SHUTDOWN: 'SHUTDOWN'
+};
+
+function transition (newState) {
+    vld.enum(Object.keys(states))(
+        newState, 'argument 0 (newState) to transition'
+    );
+}
+
+test('enum happy', function (assert) {
+    transition(states.DISABLED);
+    assert.end();
+});
+
+test('enum sad', function (assert) {
+    assert.throws(function () {
+        transition('DISARBLED');
+    }, /Expected argument 0 \(newState\) to transition to be one of DISABLED ENABLED PROCESSING SHUTDOWN, but instead got DISARBLED \(string\)/);
+    assert.end();
+});
+

@@ -161,4 +161,39 @@ vld.equals = function validateEquals(expectedValue) {
     }
 };
 
+vld.enum = function validateEnum(choices, name) {
+    if (name) {
+        validateEnumInline.expected = "a " + name;
+    } else {
+        validateEnumInline.expected = "one of " + choices.join(' ');
+    }
+
+    return validateEnumInline;
+
+    function validateEnumInline(item, name, errorConstructor) {
+        if (errorConstructor !== false) {
+            errorConstructor = errorConstructor || ValidationError;
+        }
+
+        var res;
+
+        if (choices.indexOf(item) === -1) {
+            res = {
+                value: item,
+                valueType: typeof item,
+                itemName: name,
+                expected: validateEnumInline.expected,
+                expectedStr: validateEnumInline.expected
+            };
+        }
+
+        if (res && errorConstructor) {
+            throw new errorConstructor(res);
+        }
+
+        return res;
+
+    }
+};
+
 module.exports = vld;
