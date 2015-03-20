@@ -85,7 +85,7 @@ var states = {
 
 function transition (newState) {
     vld.enum(Object.keys(states))(
-        newState, 'argument 0 (newState) to transition'
+        newState, 'argument 0 (newState) to `transition`'
     );
 }
 
@@ -97,7 +97,7 @@ test('enum happy', function (assert) {
 test('enum sad', function (assert) {
     assert.throws(function () {
         transition('DISARBLED');
-    }, /Expected argument 0 \(newState\) to transition to be one of DISABLED ENABLED PROCESSING SHUTDOWN, but instead got DISARBLED \(string\)/);
+    }, /Expected argument 0 \(newState\) to `transition` to be one of DISABLED ENABLED PROCESSING SHUTDOWN, but instead got DISARBLED \(string\)/);
     assert.end();
 });
 
