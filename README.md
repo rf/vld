@@ -20,8 +20,8 @@ function doThing(options) {
 }
 
 
-// InvalidPropertyError: Expected property 'foo' of `options` to be string, 
-// but instead got 39 (number)
+// throws InvalidPropertyError: Expected property 'foo' of `options` to be 
+// string, but instead got 39 (number)
 doThing({foo: 39});
 
 
@@ -36,7 +36,7 @@ doThing({
 })
 
 
-// throws InvalidPropertyError: Expected property 'baz' of `options`to be 34 
+// throws InvalidPropertyError: Expected property 'baz' of `options` to be 34 
 // or true or string, but instead got 1000 (number)
 doThing({
     foo: 'hello',
@@ -63,11 +63,13 @@ function stuff(type, name, callback) {
     vld.function(callback, 'argument 2 (callback');
 }
 
+
 // does not throw
 stuff('string!', 'the name');
 
 // also does not throw
 testIt('sting', 'also string', function () {});
+
 
 // throws ValidationError: Expected argument 1 (name or callback) to be 
 // function or string, but instead got true (boolean)
