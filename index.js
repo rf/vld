@@ -13,7 +13,7 @@ var ValidationError = TypedError({
 });
 
 function validateSingle(item, key, name, checkFn, errorConstructor) {
-    var res = checkFn(item, key, false);
+    var res = checkFn(item, key, false, name);
     if (res) {
         res.object = name;
         throw new errorConstructor(res);
@@ -55,17 +55,18 @@ function typeOfCheck(type) {
     };
 }
 
-vld.string = typeOfCheck('string');
-vld.number = typeOfCheck('number');
-vld.function = typeOfCheck('function');
-vld.undefined = typeOfCheck('undefined');
-vld.object = typeOfCheck('object');
+vld.string = vld.str = typeOfCheck('string');
+vld.number = vld.num = typeOfCheck('number');
+vld.function = vld.fn = vld.cb = vld.callback =typeOfCheck('function');
+vld.undefined = vld.undef = typeOfCheck('undefined');
+vld.object = vld.obj = typeOfCheck('object');
+vld.boolean = vld.bool = typeOfCheck('boolean');
 
 vld.properties = 
 function makeValidateProperties(spec) {
     return validateProperties;
     
-    function validateProperties(obj, name, errorConstructor) {
+    function validateProperties(obj, name, errorConstructor, parentKey) {
         // If we're checking properties then it should definitely be an object
         var res = vld.object(obj, name, errorConstructor);
         if (res) {
@@ -74,15 +75,23 @@ function makeValidateProperties(spec) {
 
         errorConstructor = errorConstructor || InvalidProperty;
         Object.keys(spec).forEach(function (key) {
-            console.log("checking item " + key);
             var item = obj[key];
             var rules = spec[key];
+
+            var fullName = name;
+
+            // If we were passed a parentKey add it to the name, this allows
+            // us to make nice error messages when vld.properties is nested
+            if (parentKey) {
+                fullName = parentKey + '.' + fullName;
+            }
+
             if (Array.isArray(rules)) {
                 rules.forEach(function (rule) {
-                    validateSingle(item, key, name, rule, errorConstructor);
+                    validateSingle(item, key, fullName, rule, errorConstructor);
                 });
             } else {
-                validateSingle(item, key, name, rules, errorConstructor);
+                validateSingle(item, key, fullName, rules, errorConstructor);
             }
         });
     }
