@@ -101,3 +101,48 @@ test('enum sad', function (assert) {
     assert.end();
 });
 
+test('nested options props check', function (assert) {
+    var options = {
+        foo: 83,
+        length: 11,
+        name: 'hi',
+        enabled: true,
+        callback: function () {},
+        subconfig: {
+            name: 'bob',
+            state: states.DISABLED,
+            logger: {
+                enabled: false
+            }
+        }
+    };
+
+    vld.properties({
+        foo: vld.number,
+        callback: vld.function,
+        subconfig: vld.properties({
+            name: vld.string,
+            state: vld.enum(Object.keys(states)),
+            logger: vld.properties({
+                enabled: vld.bool
+            })
+        })
+    })(options, 'options');
+
+    assert.throws(function () {
+        vld.properties({
+            foo: vld.number,
+            callback: vld.function,
+            subconfig: vld.properties({
+                name: vld.string,
+                state: vld.enum(Object.keys(states)),
+                logger: vld.properties({
+                    enabled: vld.bool,
+                    filename: vld.required(vld.string)
+                })
+            })
+        })(options, 'options');
+    }, /InvalidPropertyError: Expected property 'filename' of `options.subconfig.logger` to be string \(required\), but instead got  \(undefined\)/);
+
+    assert.end();
+});

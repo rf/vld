@@ -8,15 +8,18 @@ var vld = require('vld');
 
 function doThing(options) {
     vld.object(options);
-    vld.properties(options, 'options', {
+    vld.properties({
         foo: vld.string,
         bar: vld.required(vld.string),
         success: vld.required(vld.function),
         failure: vld.required(vld.function),
         type: vld.required(vld.or(vld.string, vld.number)),
-
-        baz: vld.or(vld.equals(34), vld.equals(true), vld.string)
-    });
+        baz: vld.or(vld.equals(34), vld.equals(true), vld.string),
+        server: vld.properties({
+            host: 'google.com',
+            port: 80
+        })
+    }, options, 'options');
 }
 
 
@@ -46,6 +49,23 @@ doThing({
     type: 1000,
     baz: 1000
 });
+
+
+// throws InvalidPropertyError: Expected property 'port' of `options.server` 
+// to be number, but instead got 80 (string)
+doThing({
+    foo: 'hello',
+    bar: 'hi',
+    success: function () {},
+    failure: function () {},
+    type: 1000,
+    baz: 34,
+    server: {
+        host: 'google.com',
+        port: '80'
+    }
+});
+
 
 ```
 
