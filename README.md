@@ -88,12 +88,12 @@ function stuff(type, name, callback) {
 stuff('string!', 'the name');
 
 // also does not throw
-testIt('sting', 'also string', function () {});
+stuff('string', 'also string', function () {});
 
 
 // throws ValidationError: Expected argument 1 (name or callback) to be 
 // function or string, but instead got true (boolean)
-testIt('string', true);
+stuff('string', true);
 ```
 
 
