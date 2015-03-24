@@ -9,11 +9,11 @@ test('basic properties validation', function (assert) {
     };
 
     vld.object(options);
-    vld.properties(options, 'options', {
+    vld.properties({
       type: vld.required(vld.string),
       message: vld.string,
       callback: vld.required(vld.function)
-    });
+    })(options, 'options');
 
     assert.end();
 });
@@ -55,22 +55,22 @@ test('arguments validation, string throws', function (assert) {
 });
 
 test('properties with required or', function (assert) {
-    vld.properties({foo: 38}, 'options', {
+    vld.properties({
         foo: vld.required(vld.or(vld.function, vld.string, vld.equals(38)))
-    });
+    })({foo: 38}, 'options');
 
-    vld.properties({foo: 'hi'}, 'options', {
+    vld.properties({
         foo: vld.required(vld.or(vld.function, vld.string, vld.equals(38)))
-    });
+    })({foo: 'hi'}, 'options');
 
-    vld.properties({foo: function () {}}, 'options', {
+    vld.properties({
         foo: vld.required(vld.or(vld.function, vld.string, vld.equals(38)))
-    });
+    })({foo: function () {}}, 'options');
 
     assert.throws(function () {
-        vld.properties({foo: 93}, 'options', {
+        vld.properties({
             foo: vld.required(vld.or(vld.function, vld.string, vld.equals(38)))
-        });
+        })({foo: 93}, 'options');
     }, /Expected property 'foo' of `options` to be function or string or 38, but instead got 93 \(number\)/);
 
     assert.end();

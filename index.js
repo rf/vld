@@ -61,20 +61,31 @@ vld.function = typeOfCheck('function');
 vld.undefined = typeOfCheck('undefined');
 vld.object = typeOfCheck('object');
 
-vld.properties = function vldObject(obj, name, spec, errorConstructor) {
-    errorConstructor = errorConstructor || InvalidProperty;
-    Object.keys(spec).forEach(function (key) {
-        console.log("checking item " + key);
-        var item = obj[key];
-        var rules = spec[key];
-        if (Array.isArray(rules)) {
-            rules.forEach(function (rule) {
-                validateSingle(item, key, name, rule, errorConstructor);
-            });
-        } else {
-            validateSingle(item, key, name, rules, errorConstructor);
+vld.properties = 
+function makeValidateProperties(spec) {
+    return validateProperties;
+    
+    function validateProperties(obj, name, errorConstructor) {
+        // If we're checking properties then it should definitely be an object
+        var res = vld.object(obj, name, errorConstructor);
+        if (res) {
+            return res;
         }
-    });
+
+        errorConstructor = errorConstructor || InvalidProperty;
+        Object.keys(spec).forEach(function (key) {
+            console.log("checking item " + key);
+            var item = obj[key];
+            var rules = spec[key];
+            if (Array.isArray(rules)) {
+                rules.forEach(function (rule) {
+                    validateSingle(item, key, name, rule, errorConstructor);
+                });
+            } else {
+                validateSingle(item, key, name, rules, errorConstructor);
+            }
+        });
+    }
 };
 
 vld.required = function validateRequired(checkFn) {
@@ -138,7 +149,7 @@ vld.or = function validateOr() {
     }
 };
 
-vld.equals = function validateEquals(expectedValue) {
+vld.equals = function makeValidateEquals(expectedValue) {
     validateEqualsInline.expected = expectedValue;
 
     return validateEqualsInline;
@@ -161,7 +172,7 @@ vld.equals = function validateEquals(expectedValue) {
     }
 };
 
-vld.enum = function validateEnum(choices, name) {
+vld.enum = function makeValidateEnum(choices, name) {
     if (name) {
         validateEnumInline.expected = "a " + name;
     } else {
