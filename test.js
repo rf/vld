@@ -72,7 +72,7 @@ test('properties with required or', function (assert) {
         vld.properties({
             foo: vld.required(vld.or(vld.function, vld.string, vld.equals(38)))
         })({foo: 93}, 'options');
-    }, /Expected property 'foo' of `options` to be function or string or 38, but instead got 93 \(number\)/);
+    }, /Expected property 'foo' of `options` to be function or string or 38 \(number\), but instead got 93 \(number\)/);
 
     assert.end();
 });
@@ -98,7 +98,7 @@ test('enum happy', function (assert) {
 test('enum sad', function (assert) {
     assert.throws(function () {
         transition('DISARBLED');
-    }, /Expected argument 0 \(newState\) to `transition` to be one of DISABLED ENABLED PROCESSING SHUTDOWN, but instead got DISARBLED \(string\)/);
+    }, /Expected argument 0 \(newState\) to `transition` to be one of DISABLED ENABLED PROCESSING SHUTDOWN, but instead got 'DISARBLED' \(string\)/);
     assert.end();
 });
 
@@ -222,6 +222,58 @@ test('buffer check', function (assert) {
     assert.throws(function () {
         vld.buffer([], '`buffer`');
     }, /ValidationError: Expected `buffer` to be buffer, but instead got \[\] \(array\)/);
+
+    assert.end();
+});
+
+test('null check', function (assert) {
+    vld.null(null, 'nullvar');
+
+    assert.throws(function () {
+        vld.null('asfd', 'nullvar');
+    }, /ValidationError: Expected nullvar to be null, but instead got 'asfd' \(string\)/);
+
+    assert.end();
+});
+
+test('nan check', function (assert) {
+    vld.nan(NaN, 'nullvar');
+
+    assert.throws(function () {
+        vld.nan('asfd', 'nullvar');
+    }, /ValidationError: Expected nullvar to be NaN, but instead got 'asfd' \(string\)/);
+
+    assert.end();
+});
+
+test('int check', function (assert) {
+    vld.int(380, 'intvar');
+
+    assert.throws(function () {
+        vld.int('asfd', 'intvar');
+    }, /ValidationError: Expected intvar to be integer, but instead got 'asfd' \(string\)/);
+
+    assert.end();
+});
+
+test('properties on non object', function (assert) {
+    var obj = 'hi';
+
+    assert.throws(function () {
+        vld.properties({foo: vld.string})(obj, 'obj');
+    }, /ValidationError: Expected obj to be object, but instead got 'hi' \(string\)/);
+
+    assert.end();
+});
+
+test('equals check', function (assert) {
+    var thing = 100;
+    vld.equals(100)(thing, 'thing');
+
+    assert.throws(function () {
+        var baz = 101;
+        vld.equals(100)(baz, 'baz');
+    }, /ValidationError: Expected baz to be 100 \(number\), but instead got 101 \(number\)/);
 
     assert.end();
 });

@@ -40,6 +40,10 @@ function describeValue(value) {
 
     if (type === 'null' || type === 'undefined') return type;
 
+    if (type === 'string') {
+        return "'" + value + "' (string)";
+    }
+
     return value + ' (' + type + ')';
 }
 
@@ -120,6 +124,8 @@ vld.int = vld.integer = makeValidator('integer', function (item) {
 });
 
 vld.properties = function makeValidateProperties(spec) {
+    validateProperties.expected = 'object';
+
     return validateProperties;
     
     function validateProperties(obj, name, errorConstructor, parentKey) {
@@ -132,7 +138,7 @@ vld.properties = function makeValidateProperties(spec) {
         errorConstructor = errorConstructor || InvalidProperty;
         Object.keys(spec).forEach(function (key) {
             var item = obj[key];
-            var rules = spec[key];
+            var rule = spec[key];
 
             var fullName = name;
 
@@ -146,13 +152,7 @@ vld.properties = function makeValidateProperties(spec) {
                 }
             }
 
-            if (Array.isArray(rules)) {
-                rules.forEach(function (rule) {
-                    validateSingle(item, key, fullName, rule, errorConstructor);
-                });
-            } else {
-                validateSingle(item, key, fullName, rules, errorConstructor);
-            }
+            validateSingle(item, key, fullName, rule, errorConstructor);
         });
     }
 };
@@ -163,12 +163,10 @@ vld.elements = function makeValidateElements(spec) {
     function validateElements(array, name, errorConstructor, parentKey) {
         // If we're checking elements then it should definitely be an array
         // TODO: this check
-        /*
         var res = vld.array(array, name, errorConstructor);
         if (res) {
             return res;
         }
-        */
 
         var fullName = name;
 
@@ -185,13 +183,7 @@ vld.elements = function makeValidateElements(spec) {
         errorConstructor = errorConstructor || InvalidElement;
 
         array.forEach(function (item, index) {
-            if (Array.isArray(spec)) {
-                spec.forEach(function (rule) {
-                    validateSingle(item, index, fullName, rule, errorConstructor);
-                });
-            } else {
-                validateSingle(item, index, fullName, spec, errorConstructor);
-            }
+            validateSingle(item, index, fullName, spec, errorConstructor);
         });
 
     }
@@ -203,8 +195,13 @@ vld.required = function validateRequired(checkFn) {
     return validateRequiredInline;
 
     function validateRequiredInline(item, name, errorConstructor) {
+        if (errorConstructor !== false) {
+            errorConstructor = errorConstructor || ValidationError;
+        }
+        var ret;
+
         if (typeof item === "undefined") {
-            return {
+            ret = {
                 value: item,
                 valueStr: describeValue(item),
                 valueType: typeof item,
@@ -213,6 +210,14 @@ vld.required = function validateRequired(checkFn) {
                 expected: checkFn.expected,
                 expectedStr: validateRequiredInline.expected
             };
+        }
+
+        if (ret) {
+            if (errorConstructor) {
+                throw new errorConstructor(ret);
+            }
+
+            return ret;
         }
 
         return checkFn(item, name, errorConstructor);
@@ -231,7 +236,6 @@ vld.or = function validateOr() {
         var res = true;
         checkFns.forEach(function (checkFn) {
             // at least one checkFn passes
-            console.log("or running check " + checkFn.expected);
             if (!checkFn(item, name, false)) {
                 res = false;
             }
@@ -261,7 +265,7 @@ vld.or = function validateOr() {
 };
 
 vld.equals = function makeValidateEquals(expectedValue) {
-    validateEqualsInline.expected = expectedValue;
+    validateEqualsInline.expected = describeValue(expectedValue);
 
     return validateEqualsInline;
 
@@ -269,18 +273,25 @@ vld.equals = function makeValidateEquals(expectedValue) {
         if (errorConstructor !== false) {
             errorConstructor = errorConstructor || ValidationError;
         }
+        var res;
 
         if (item !== expectedValue) {
-            return {
+            res = {
                 value: item,
                 valueStr: describeValue(item),
                 valueType: typeof item,
                 itemName: name,
                 required: true,
                 expected: expectedValue,
-                expectedStr: expectedValue
+                expectedStr: validateEqualsInline.expected
             };
         }
+
+        if (res && errorConstructor) {
+            throw new errorConstructor(res);
+        }
+
+        return res;
     }
 };
 
