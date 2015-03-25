@@ -3,13 +3,13 @@ var util = require('util');
 
 var InvalidProperty = TypedError({
     type: 'invalid.property',
-    message: "Expected property '{itemName}' of `{object}` to be " +
+    message: "Expected property '{itemName}' of {object} to be " +
         "{expectedStr}, but instead got {valueStr}"
 });
 
 var InvalidElement = TypedError({
     type: 'invalid.element',
-    message: "Expected item {itemName} of `{object}` to be " +
+    message: "Expected item {itemName} of {object} to be " +
         "{expectedStr}, but instead got {valueStr}"
 });
 

@@ -29,7 +29,7 @@ doThing({foo: 39});
 
 
 // throws InvalidPropertyError: Expected property 'bar' of `options` to be 
-// string (required), but instead got  (undefined)
+// string (required), but instead got undefined
 doThing({
     foo: 'hello',
     success: function () {},
@@ -40,7 +40,7 @@ doThing({
 
 
 // throws InvalidPropertyError: Expected property 'baz' of `options` to be 34 
-// or true or string, but instead got 1000 (number)
+// (number) or true or string, but instead got 1000 (number)
 doThing({
     foo: 'hello',
     bar: 'hi',
@@ -52,7 +52,7 @@ doThing({
 
 
 // throws InvalidPropertyError: Expected property 'port' of `options.server` 
-// to be number, but instead got 80 (string)
+// to be number, but instead got '80' (string)
 doThing({
     foo: 'hello',
     bar: 'hi',

@@ -72,7 +72,7 @@ test('properties with required or', function (assert) {
         vld.properties({
             foo: vld.required(vld.or(vld.function, vld.string, vld.equals(38)))
         })({foo: 93}, 'options');
-    }, /Expected property 'foo' of `options` to be function or string or 38 \(number\), but instead got 93 \(number\)/);
+    }, /Expected property 'foo' of options to be function or string or 38 \(number\), but instead got 93 \(number\)/);
 
     assert.end();
 });
@@ -143,7 +143,7 @@ test('nested options props check', function (assert) {
                 })
             })
         })(options, 'options');
-    }, /InvalidPropertyError: Expected property 'filename' of `options.subconfig.logger` to be string \(required\), but instead got undefined/);
+    }, /InvalidPropertyError: Expected property 'filename' of options.subconfig.logger to be string \(required\), but instead got undefined/);
 
     assert.end();
 });
@@ -153,7 +153,7 @@ test('array elements simple', function (assert) {
 
     assert.throws(function () {
         vld.elements(vld.string)(['hi', 'bye', false, 'foo'], 'ary');
-    }, /InvalidElementError: Expected item 2 of `ary` to be string, but instead got false \(boolean\)/);
+    }, /InvalidElementError: Expected item 2 of ary to be string, but instead got false \(boolean\)/);
 
     assert.end();
 });
@@ -181,7 +181,7 @@ test('array elements objects', function (assert) {
             type: vld.string,
             size: vld.number
         }))(ary2, 'ary2');
-    }, /InvalidPropertyError: Expected property 'type' of `ary2\[1\]` to be string, but instead got true \(boolean\)/);
+    }, /InvalidPropertyError: Expected property 'type' of ary2\[1\] to be string, but instead got true \(boolean\)/);
 
     assert.end();
 });
@@ -201,7 +201,7 @@ test('array elements nested', function (assert) {
 
     assert.throws(function () {
         vld.elements(vld.elements(vld.string))(ary2, 'ary2');
-    }, /InvalidElementError: Expected item 1 of `ary2\[1\]` to be string, but instead got true \(boolean\)/);
+    }, /InvalidElementError: Expected item 1 of ary2\[1\] to be string, but instead got true \(boolean\)/);
 
     assert.end();
 });
