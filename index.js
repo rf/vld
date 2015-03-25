@@ -1,44 +1,78 @@
 var TypedError = require('error/typed');
+var util = require('util');
 
 var InvalidProperty = TypedError({
     type: 'invalid.property',
     message: "Expected property '{itemName}' of `{object}` to be " +
-        "{expectedStr}, but instead got {value} ({valueType})"
+        "{expectedStr}, but instead got {valueStr}"
 });
+
+var InvalidElement = TypedError({
+    type: 'invalid.element',
+    message: "Expected item {itemName} of `{object}` to be " +
+        "{expectedStr}, but instead got {valueStr}"
+});
+
 
 var ValidationError = TypedError({
     type: 'validation',
     message: "Expected {itemName} to be {expectedStr}, but instead got " +
-        "{value} ({valueType})"
+        "{valueStr}"
 });
+
+function betterTypeof(value) {
+    if (value === null) return 'null';
+    if (Array.isArray(value)) return 'array';
+    if (value && value.constructor === RegExp) return 'regexp';
+    if (Buffer.isBuffer(value)) return 'buffer';
+
+    return typeof value;
+}
+
+// Comes up with a human readable form for value, usually with type in
+// parens
+function describeValue(value) {
+    var type = betterTypeof(value);
+
+    if (type === 'object' || type === 'array') {
+        return util.inspect(value) + ' (' + type + ')';
+    }
+
+    if (type === 'null' || type === 'undefined') return type;
+
+    return value + ' (' + type + ')';
+}
 
 function validateSingle(item, key, name, checkFn, errorConstructor) {
     var res = checkFn(item, key, false, name);
     if (res) {
         res.object = name;
+        res.valueStr = describeValue(res.value);
+
         throw new errorConstructor(res);
     }
 }
 
 var vld = {};
 
-function typeOfCheck(type) {
-    typeOfCheckInline.expected = type;
+function makeValidator(expectedStr, checkFn) {
+    validator.expected = expectedStr;
 
-    return typeOfCheckInline;
+    return validator;
 
-    function typeOfCheckInline(item, name, errorConstructor) {
+    function validator(item, name, errorConstructor) {
         var ret;
         if (errorConstructor !== false) {
             errorConstructor = errorConstructor || ValidationError;
         }
 
-        if (typeof item !== type && typeof item !== 'undefined') {
+        if (!checkFn(item) && typeof item !== 'undefined') {
             ret = {
                 value: item,
+                valueStr: describeValue(item),
                 valueType: typeof item,
-                expected: type,
-                expectedStr: type,
+                expected: expectedStr,
+                expectedStr: expectedStr,
                 itemName: name
             };
         }
@@ -49,10 +83,13 @@ function typeOfCheck(type) {
             return ret;
         }
     }
+}
 
-    typeOfCheckInline.internalInterface = function typeofInternal(options) {
-        var res = typeOfCheckInline(options.value);
-    };
+
+function typeOfCheck(type) {
+    return makeValidator(type, function (item) {
+        return typeof item === type;
+    });
 }
 
 vld.string = vld.str = typeOfCheck('string');
@@ -62,8 +99,27 @@ vld.undefined = vld.undef = typeOfCheck('undefined');
 vld.object = vld.obj = typeOfCheck('object');
 vld.boolean = vld.bool = typeOfCheck('boolean');
 
-vld.properties = 
-function makeValidateProperties(spec) {
+vld.array = vld.arr = vld.ary = makeValidator('array', function (item) {
+    return Array.isArray(item);
+});
+
+vld.buff = vld.buffer = makeValidator('buffer', function (item) {
+    return Buffer.isBuffer(item);
+});
+
+vld.null = makeValidator('null', function (item) {
+    return item === null;
+});
+
+vld.nan = vld.NaN = makeValidator('NaN', function (item) {
+    return item !== item;
+});
+
+vld.int = vld.integer = makeValidator('integer', function (item) {
+    return (typeof item === 'number') && (item % 1 === 0);
+});
+
+vld.properties = function makeValidateProperties(spec) {
     return validateProperties;
     
     function validateProperties(obj, name, errorConstructor, parentKey) {
@@ -83,7 +139,11 @@ function makeValidateProperties(spec) {
             // If we were passed a parentKey add it to the name, this allows
             // us to make nice error messages when vld.properties is nested
             if (parentKey) {
-                fullName = parentKey + '.' + fullName;
+                if (typeof fullName === 'number') {
+                    fullName = parentKey + '[' + fullName + ']';
+                } else {
+                    fullName = parentKey + '.' + fullName;
+                }
             }
 
             if (Array.isArray(rules)) {
@@ -97,6 +157,46 @@ function makeValidateProperties(spec) {
     }
 };
 
+vld.elements = function makeValidateElements(spec) {
+    return validateElements;
+
+    function validateElements(array, name, errorConstructor, parentKey) {
+        // If we're checking elements then it should definitely be an array
+        // TODO: this check
+        /*
+        var res = vld.array(array, name, errorConstructor);
+        if (res) {
+            return res;
+        }
+        */
+
+        var fullName = name;
+
+        // If we were passed a parentKey add it to the name, this allows
+        // us to make nice error messages when vld.properties is nested
+        if (parentKey) {
+            if (typeof fullName === 'number') {
+                fullName = parentKey + '[' + fullName + ']';
+            } else {
+                fullName = parentKey + '.' + fullName;
+            }
+        }
+
+        errorConstructor = errorConstructor || InvalidElement;
+
+        array.forEach(function (item, index) {
+            if (Array.isArray(spec)) {
+                spec.forEach(function (rule) {
+                    validateSingle(item, index, fullName, rule, errorConstructor);
+                });
+            } else {
+                validateSingle(item, index, fullName, spec, errorConstructor);
+            }
+        });
+
+    }
+};
+
 vld.required = function validateRequired(checkFn) {
     validateRequiredInline.expected = checkFn.expected + ' (required)';
 
@@ -106,6 +206,7 @@ vld.required = function validateRequired(checkFn) {
         if (typeof item === "undefined") {
             return {
                 value: item,
+                valueStr: describeValue(item),
                 valueType: typeof item,
                 itemName: name,
                 required: true,
@@ -143,6 +244,7 @@ vld.or = function validateOr() {
         if (res) {
             var resInfo = {
                 value: item,
+                valueStr: describeValue(item),
                 valueType: typeof item,
                 itemName: name,
                 expectedStr: validateOrInline.expected,
@@ -171,6 +273,7 @@ vld.equals = function makeValidateEquals(expectedValue) {
         if (item !== expectedValue) {
             return {
                 value: item,
+                valueStr: describeValue(item),
                 valueType: typeof item,
                 itemName: name,
                 required: true,
@@ -200,6 +303,7 @@ vld.enum = function makeValidateEnum(choices, name) {
         if (choices.indexOf(item) === -1) {
             res = {
                 value: item,
+                valueStr: describeValue(item),
                 valueType: typeof item,
                 itemName: name,
                 expected: validateEnumInline.expected,
