@@ -277,3 +277,24 @@ test('equals check', function (assert) {
 
     assert.end();
 });
+
+test('better typeof regex', function (assert) {
+    vld.int(380, 'intvar');
+
+    assert.throws(function () {
+        vld.int(/hi/, 'intvar');
+    }, /ValidationError: Expected intvar to be integer, but instead got \/hi\/ \(regexp\)/);
+
+    assert.end();
+});
+
+test('better typeof null', function (assert) {
+    vld.int(380, 'intvar');
+
+    assert.throws(function () {
+        vld.int(null, 'intvar');
+    }, /ValidationError: Expected intvar to be integer, but instead got null/);
+
+    assert.end();
+});
+
