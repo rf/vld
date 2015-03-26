@@ -23,12 +23,12 @@ function doThing(options) {
 }
 
 
-// throws InvalidPropertyError: Expected property 'foo' of `options` to be 
+// throws InvalidPropertyError: Expected property 'foo' of options to be 
 // string, but instead got 39 (number)
 doThing({foo: 39});
 
 
-// throws InvalidPropertyError: Expected property 'bar' of `options` to be 
+// throws InvalidPropertyError: Expected property 'bar' of options to be 
 // string (required), but instead got undefined
 doThing({
     foo: 'hello',
@@ -39,7 +39,7 @@ doThing({
 })
 
 
-// throws InvalidPropertyError: Expected property 'baz' of `options` to be 34 
+// throws InvalidPropertyError: Expected property 'baz' of options to be 34 
 // (number) or true or string, but instead got 1000 (number)
 doThing({
     foo: 'hello',
@@ -51,7 +51,7 @@ doThing({
 });
 
 
-// throws InvalidPropertyError: Expected property 'port' of `options.server` 
+// throws InvalidPropertyError: Expected property 'port' of options.server
 // to be number, but instead got '80' (string)
 doThing({
     foo: 'hello',
@@ -86,6 +86,7 @@ function stuff(type, name, callback) {
 
 // does not throw
 stuff('string!', 'the name');
+
 
 // also does not throw
 stuff('string', 'also string', function () {});
