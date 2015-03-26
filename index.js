@@ -297,7 +297,7 @@ vld.equals = function makeValidateEquals(expectedValue) {
 
 vld.enum = function makeValidateEnum(choices, name) {
     if (name) {
-        validateEnumInline.expected = "a " + name;
+        validateEnumInline.expected = name;
     } else {
         validateEnumInline.expected = "one of " + choices.join(' ');
     }

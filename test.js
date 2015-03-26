@@ -102,6 +102,20 @@ test('enum sad', function (assert) {
     assert.end();
 });
 
+
+test('enum sad, named', function (assert) {
+    function transition2 (newState) {
+        vld.enum(Object.keys(states), 'state')(
+            newState, 'argument 0 (newState) to `transition`'
+        );
+    }
+
+    assert.throws(function () {
+        transition2('DISARBLED');
+    }, /Expected argument 0 \(newState\) to `transition` to be state, but instead got 'DISARBLED' \(string\)/);
+    assert.end();
+});
+
 test('nested options props check', function (assert) {
     var options = {
         foo: 83,
